@@ -8,24 +8,9 @@ library(rgdal)
 library(data.table)
 library(tictoc)
 
-tic()
-##Set climate bin width.
-bin.width <- 0.25   
-## +- 0.25 degrees C 
-## total bin diameter = 0.5 degrees C 
-
-
-#Set number of batches (e.g. 100)
-batch_total <- 100
-#1000, 500, 200, 100
-
-#Set batch number (e.g. 1 of 100)
-batch_number <- 100 #need to change it manually
-
-cost.penalty <- 2 ## Two penalty units per degree C dissimilarity from temperature of interest
 
 ## Get current and future climate and resistance raster
-setwd('C:/Users/u0142858/OneDrive - KU Leuven/KUL/PhD/My Project/WP1_Mapping_CB/R/ClimateVelocity/Git_WP1_ClimateVelocity')
+setwd('C:/GitHubRepository/ClimateVelocity_shared')
 pre1 <- raster('./Data/DK_bio1_CHELSA_EPSG3035_1981-2010.tif'); names(pre1) <- 'pre1' ## Mean annual temperature (1995); units are degrees C 
 fut30 <- raster('./Data/DK_bio1_CHELSA_EPSG3035_ssp126.tif'); names(fut30) <- 'fut30' ## Mean annual temperature (2085); units are degrees C 
 resistance.mask <- raster('./Data/resistance.mask_DK_CHELSA_epeg3035.tif')
@@ -61,11 +46,12 @@ clim_ssp126 <- as.data.table(clim_ssp126)
 #head(preT)
 
 ####Create resistance mask for later use to prevent searching analog pixel goes beyond our study areas.
-#resistance.mask <- pre1 # initial set up of the resistance mask
-#resistance.mask[resistance.mask < 5000] <- 1 # convert all pixels to a value = 1
-#resistance.mask <- distance(resistance.mask) # calcualte distance from pixels that are not NA
-#resistance.mask[resistance.mask > 10000] <- NA # convert all pixels > 10,000 m from study area boundary to NA
-#resistance.mask[resistance.mask >= 0] <- 1 # convert all values = 1 for simplicity
+resistance.mask <- pre1 # initial set up of the resistance mask
+resistance.mask[resistance.mask < 5000] <- 1 # convert all pixels to a value = 1
+resistance.mask <- distance(resistance.mask) # calcualte distance from pixels that are not NA
+resistance.mask[resistance.mask > 10000] <- NA # convert all pixels > 10,000 m from study area boundary to NA
+resistance.mask[resistance.mask >= 0] <- 1 # convert all values = 1 for simplicity
+writeRaster(resistance.mask, filename = "C:/Users/u0142858/OneDrive - KU Leuven/KUL/PhD/My Project/WP1_Mapping_CB/Data/CHELSA/resistance.mask_DK_CHELSA_epeg3035.tif", format="GTiff", overwrite=TRUE)
 
 ##Start with your vector of temperatures, if you did not do it pixel wise, use the "temp.vector".
 #temp.vector <- preT$MAT_pre
@@ -73,12 +59,24 @@ clim_ssp126 <- as.data.table(clim_ssp126)
 ##Create an empty list for your different outputs
 #out.list <- list()
 
-#### Make a foreach parallel processing around the code you want to run for each temperature value####
-
+tic()
 ##Some input indices.
 n=1 #The number of climate variable, in this case, only one climate variable (mean annual temp)
 geoTol = 180000 #Searching radius for the analog pixel. (2 km yr-1)
 tdiff = 90 #Time interval between present and future.
+
+##Set climate bin width.
+bin.width <- 0.25   
+## +- 0.25 degrees C 
+## total bin diameter = 0.5 degrees C 
+cost.penalty <- 2 ## Two penalty units per degree C dissimilarity from temperature of interest
+
+#Set number of batches (e.g. 100)
+batch_total <- 500
+#1000, 500, 200, 100
+
+#Set batch number (e.g. 1 of 100)
+batch_number <- 55 #need to change it manually
 
 ##Prepare data
 dat <- na.omit(data.table(clim_ssp126))
@@ -96,8 +94,8 @@ registerDoParallel(cl)
 ##Start paprallel processing.
 #Add in bacth number
 
+#### Make a foreach parallel processing around the code you want to run for each temperature value####
 #"x" is the batch number that will be added in the foreach loop.
-
 result <- foreach(x = ((ncores*(batch_number - 1)) + 1):(ncores*batch_number), .combine = rbind, #maybe use rbindlist instead? .combine=function(x,y)rbindlist(list(x,y))
                   .multicombine = TRUE) %dopar% { #Change the raster package to terra?
                     library(raster)
