@@ -46,12 +46,12 @@ clim_ssp126 <- as.data.table(clim_ssp126)
 #head(preT)
 
 ####Create resistance mask for later use to prevent searching analog pixel goes beyond our study areas.
-resistance.mask <- pre1 # initial set up of the resistance mask
-resistance.mask[resistance.mask < 5000] <- 1 # convert all pixels to a value = 1
-resistance.mask <- distance(resistance.mask) # calcualte distance from pixels that are not NA
-resistance.mask[resistance.mask > 10000] <- NA # convert all pixels > 10,000 m from study area boundary to NA
-resistance.mask[resistance.mask >= 0] <- 1 # convert all values = 1 for simplicity
-writeRaster(resistance.mask, filename = "C:/Users/u0142858/OneDrive - KU Leuven/KUL/PhD/My Project/WP1_Mapping_CB/Data/CHELSA/resistance.mask_DK_CHELSA_epeg3035.tif", format="GTiff", overwrite=TRUE)
+#resistance.mask <- pre1 # initial set up of the resistance mask
+#resistance.mask[resistance.mask < 5000] <- 1 # convert all pixels to a value = 1
+#resistance.mask <- distance(resistance.mask) # calcualte distance from pixels that are not NA
+#resistance.mask[resistance.mask > 10000] <- NA # convert all pixels > 10,000 m from study area boundary to NA
+#resistance.mask[resistance.mask >= 0] <- 1 # convert all values = 1 for simplicity
+#writeRaster(resistance.mask, filename = "C:/Users/u0142858/OneDrive - KU Leuven/KUL/PhD/My Project/WP1_Mapping_CB/Data/CHELSA/resistance.mask_DK_CHELSA_epeg3035.tif", format="GTiff", overwrite=TRUE)
 
 ##Start with your vector of temperatures, if you did not do it pixel wise, use the "temp.vector".
 #temp.vector <- preT$MAT_pre
@@ -72,12 +72,13 @@ bin.width <- 0.25
 cost.penalty <- 2 ## Two penalty units per degree C dissimilarity from temperature of interest
 
 #Set number of batches (e.g. 100)
-batch_total <- 500
+batch_total <- 250
 #1000, 500, 200, 100
 
 #Set batch number (e.g. 1 of 100)
-batch_number <- 55 #need to change it manually
-
+set.seed(1)
+batch_number_samples <- sample.int(250,10) #need to change it manually
+batch_number <- batch_number_samples[1]
 ##Prepare data
 dat <- na.omit(data.table(clim_ssp126))
 # matrix with the future climatic values for all cells
