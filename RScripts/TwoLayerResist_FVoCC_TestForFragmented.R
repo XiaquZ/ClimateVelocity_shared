@@ -59,7 +59,7 @@ clim_ssp126 <- as.data.table(clim_ssp126)
 ##Create an empty list for your different outputs
 #out.list <- list()
 
-tic()
+tic() #tictoc for getting the consuming time for running the parallel scripts.
 ##Some input indices.
 n=1 #The number of climate variable, in this case, only one climate variable (mean annual temp)
 geoTol = 180000 #Searching radius for the analog pixel. (2 km yr-1)
@@ -72,13 +72,13 @@ bin.width <- 0.25
 cost.penalty <- 2 ## Two penalty units per degree C dissimilarity from temperature of interest
 
 #Set number of batches (e.g. 100)
-batch_total <- 250
+batch_total <- 250 #Try to split the whole data into different batches and put each batch into the parallel processing.
 #1000, 500, 200, 100
 
 #Set batch number (e.g. 1 of 100)
 set.seed(1)
-batch_number_samples <- sample.int(250,10) #need to change it manually
-batch_number <- batch_number_samples[1]
+batch_number_samples <- sample.int(250,10) #randomly select 10 batches to test for the timings.
+batch_number <- batch_number_samples[1] #Here you need to change batch number manually and combine all the outputs of each batch number at the end.
 ##Prepare data
 dat <- na.omit(data.table(clim_ssp126))
 # matrix with the future climatic values for all cells
