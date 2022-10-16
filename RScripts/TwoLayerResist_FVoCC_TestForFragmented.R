@@ -78,7 +78,7 @@ batch_total <- 250 #Try to split the whole data into different batches and put e
 #Set batch number (e.g. 1 of 100)
 set.seed(1)
 batch_number_samples <- sample.int(250,10) #randomly select 10 batches to test for the timings.
-batch_number <- batch_number_samples[1] #Here you need to change batch number manually and combine all the outputs of each batch number at the end.
+batch_number <- batch_number_samples[10] #Here you need to change batch number manually and combine all the outputs of each batch number at the end.
 ##Prepare data
 dat <- na.omit(data.table(clim_ssp126))
 # matrix with the future climatic values for all cells
